@@ -48,7 +48,7 @@ pbounds = {
             'min_samples_split' : (2, 5),
             'min_samples_leaf' : (0.0, 0.5),
             'min_weight_fraction_leaf' : (0.0, 0.5),
-            # 'max_features' : ('sqrt', 'log2'),
+            # 'max_features' : ('sqrt', 'log2', 'auto'),
             'max_leaf_nodes' : (32, 2048),
             'min_impurity_decrease' : (0, 0.25)
             # 'bootstrap' : (True, False)
@@ -60,25 +60,37 @@ optimizer = BayesianOptimization(
     random_state=42,
 )
 
-
 optimizer.maximize(
-    init_points=35,
-    n_iter=150,
+    init_points=40,
+    n_iter=120,
 )
 
 best_params = optimizer.max['params']
+
+# 소수형 int로 변환
+best_params['n_estimators'] = int(best_params['n_estimators'])
+best_params['max_depth'] = int(best_params['max_depth'])
+best_params['min_samples_split'] = int(best_params['min_samples_split'])
+best_params['max_leaf_nodes'] = int(best_params['max_leaf_nodes'])
+
+# 카테고리 인자 딕셔너리에 넣기
+best_params['criterion'] = criterion
+if max_features:
+  best_params['max_features'] = max_features
+else:
+  best_params['max_features'] = None
+best_params['bootstrap'] = bootstrap
+
+cols = ['n_estimators', 'criterion', 'max_depth', 'min_samples_split', 'min_samples_leaf', 'min_weight_fraction_leaf', 'max_features', 'max_leaf_nodes', 'min_impurity_decrease', 'bootstrap']
+submission = pd.DataFrame(data = [best_params], columns = cols)
+
+path = "../data/"
+submission.to_csv(path + f"submission_{criterion}_{bootstrap}_{max_features}.csv")
+
 print()
+print('==========================================================================================')
 print("Best Parameters")
+print()
 print(f"'criterion' = {criterion}, 'bootstrap' = {bootstrap}, 'max_features' = {max_features}")
 print(best_params)
 print('==========================================================================================')
-
-
-
-
-
-
-
-
-
-
